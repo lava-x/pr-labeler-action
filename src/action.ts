@@ -25,7 +25,8 @@ async function action(context: Context = github.context) {
 
     const ref: string = context.payload.pull_request.head.ref;
     const config = await getConfig(octokit, configPath, context.repo, ref, defaultConfig);
-    const labelsToAdd = getLabelsToAdd(config, ref);
+    const title = context.payload.pull_request.title;
+    const labelsToAdd = getLabelsToAdd(config, title);
 
     if (labelsToAdd.length > 0) {
       await octokit.issues.addLabels({
@@ -44,12 +45,12 @@ async function action(context: Context = github.context) {
   }
 }
 
-function getLabelsToAdd(config: Config, branchName: string): string[] {
+function getLabelsToAdd(config: Config, prTitle: string): string[] {
   const labelsToAdd: string[] = [];
 
   for (const label in config) {
     const patterns = arrayify(config[label]);
-    const matches = matcher([branchName], patterns);
+    const matches = matcher([prTitle], patterns);
 
     if (matches.length > 0) {
       labelsToAdd.push(label);
