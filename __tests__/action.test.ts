@@ -12,9 +12,9 @@ describe('pr-labeler-action', () => {
     setupEnvironmentVariables();
   });
 
-  it('adds the "fix" label for "fix/510-logging" branch', async () => {
+  it('adds the "fix" label for "test/510-logging" branch with title "fix/510-logging"', async () => {
     nock('https://api.github.com')
-      .get('/repos/Codertocat/Hello-World/contents/.github/pr-labeler.yml?ref=fix%2F510-logging')
+      .get('/repos/Codertocat/Hello-World/contents/.github/pr-labeler.yml?ref=test%2F510-logging')
       .reply(200, configFixture())
       .post('/repos/Codertocat/Hello-World/issues/1/labels', (body) => {
         expect(body).toMatchObject({
@@ -24,7 +24,7 @@ describe('pr-labeler-action', () => {
       })
       .reply(200);
 
-    await action(new MockContext(pullRequestOpenedFixture({ ref: 'fix/510-logging' })));
+    await action(new MockContext(pullRequestOpenedFixture({ ref: 'test/510-logging', title: 'fix/510-logging' })));
     expect.assertions(1);
   });
 
@@ -40,7 +40,9 @@ describe('pr-labeler-action', () => {
       })
       .reply(200);
 
-    await action(new MockContext(pullRequestOpenedFixture({ ref: 'feature/sign-in-page/101' })));
+    await action(
+      new MockContext(pullRequestOpenedFixture({ ref: 'feature/sign-in-page/101', title: 'feature/sign-in-page/101' }))
+    );
     expect.assertions(1);
   });
 
@@ -56,7 +58,7 @@ describe('pr-labeler-action', () => {
       })
       .reply(200);
 
-    await action(new MockContext(pullRequestOpenedFixture({ ref: 'release/2.0' })));
+    await action(new MockContext(pullRequestOpenedFixture({ ref: 'release/2.0', title: 'release/2.0' })));
     expect.assertions(1);
   });
 
@@ -72,7 +74,7 @@ describe('pr-labeler-action', () => {
       })
       .reply(200);
 
-    await action(new MockContext(pullRequestOpenedFixture({ ref: 'fix/510-logging' })));
+    await action(new MockContext(pullRequestOpenedFixture({ ref: 'fix/510-logging', title: 'fix/510-logging' })));
     expect.assertions(1);
   });
 
@@ -88,7 +90,9 @@ describe('pr-labeler-action', () => {
       })
       .reply(200);
 
-    await action(new MockContext(pullRequestOpenedFixture({ ref: 'release/skip-this-one' })));
+    await action(
+      new MockContext(pullRequestOpenedFixture({ ref: 'release/skip-this-one', title: 'release/skip-this-one' }))
+    );
     expect.assertions(1);
   });
 
@@ -101,7 +105,7 @@ describe('pr-labeler-action', () => {
       })
       .reply(200);
 
-    await action(new MockContext(pullRequestOpenedFixture({ ref: 'hello_world' })));
+    await action(new MockContext(pullRequestOpenedFixture({ ref: 'hello_world', title: 'hello world' })));
   });
 });
 
@@ -137,13 +141,14 @@ function configFixture(fileName = 'config.yml') {
   };
 }
 
-function pullRequestOpenedFixture({ ref }: { ref: string }) {
+function pullRequestOpenedFixture({ ref, title }: { ref: string; title: string }) {
   return {
     pull_request: {
       number: 1,
       head: {
         ref,
       },
+      title,
     },
     repository: {
       name: 'Hello-World',
